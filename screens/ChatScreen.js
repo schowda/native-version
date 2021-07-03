@@ -1,146 +1,241 @@
-import React, { useState } from 'react'
-import { useLayoutEffect } from 'react'
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import { Button,Input, Avatar } from 'react-native-elements'
-import {db } from '../firebase'
-import Icon from "react-native-vector-icons/FontAwesome"
-import {AntDesign, SimpleLineIcons} from "@expo/vector-icons"
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useLayoutEffect, useState, useRef } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  ScrollView,
+  TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
+import { Avatar } from "react-native-elements";
+import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import * as firebase from "firebase";
+import { auth, db } from "../firebase";
 
+const ChatScreen = ({ navigation, route }) => {
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]);
 
+  const scrollViewRef = useRef();
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: "Chat",
+      headerTitleAlign: "left",
+      headerBackTitleVisible: false,
+      headerTitle: () => (
+        <View style={styles.headerTitle}>
+          <Avatar
+            rounded
+            source={{
+              uri:
+                messages[messages.length - 1]?.data.photoURL ||
+                "https://img.pngio.com/computer-icons-user-clip-art-transparent-user-icon-png-1742152-user-logo-png-920_641.png",
+            }}
+          />
+          <Text style={styles.headerText}>{route.params.chatName}</Text>
+        </View>
+      ),
+      headerLeft: () => (
+        <TouchableOpacity
+          style={{ marginLeft: 10 }}
+          onPress={navigation.goBack}
+        >
+          <AntDesign name="arrowleft" size={24} color="white" />
+        </TouchableOpacity>
+      ),
+      headerRight: () => (
+        <View style={styles.headerRight}>
+          <TouchableOpacity>
+            <FontAwesome name="" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="settings" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, messages]);
 
-const ChatScreen = ({navigation, route }) => {
+  const handleSendMessage = () => {
+    Keyboard.dismiss();
 
+    db.collection("chats").doc(route.params.id).collection("messages").add({
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      message: input,
+      displayName: auth.currentUser.displayName,
+      email: auth.currentUser.email,
+      photoURL: auth.currentUser.photoURL,
+    });
 
-    useLayoutEffect(() => {
+    setInput("");
+  };
 
-        navigation.setOptions({
+  useLayoutEffect(() => {
+    const unsubscribe = db
+      .collection("chats")
+      .doc(route.params.id)
+      .collection("messages")
+      .orderBy("timestamp", "asc")
+      .onSnapshot((snapshot) =>
+        setMessages(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            data: doc.data(),
+          }))
+        )
+      );
 
-            title: "Chat",
-            headerTitleAlign: "left",
-            headerTitle:() => (
-                <View
-                style = {{
-                    flexDirection:"row",
-                    alignItems:"center"
-                }}
-                >
-                    <Text>          </Text>
-                    <Avatar rounded source = {{uri:"https://img.pngio.com/computer-icons-user-clip-art-transparent-user-icon-png-1742152-user-logo-png-920_641.png"}}  />
-                    <Text style = {{color:"black",marginLeft:10,fontWeight:"800"}}>{route.params.chatName}</Text>
-                </View>
-            ),
+    return unsubscribe;
+  }, [route]);
 
-            headerLeft: () => (
-                <TouchableOpacity
-                
-                style={{marginLeft:10}}
-                onPress = {navigation.goBack}
-                >
-                    <AntDesign name = "arrowleft"  size = {24} color = "white" />
-                </TouchableOpacity>
-            ),
-
-            headerRight: () => (
-                <View 
-                style = {{
-                    flexDirection:"row",
-                    justifyContent: "space-between",
-                    width:80,
-                    marginRight:20,
-
-                }}
-                >
-                
-                  
-                    <TouchableOpacity activeOpacity={0.5}>
-                   <AntDesign name = "phone" size = {24} color="black"/>
-                        </TouchableOpacity>   
-
-                        <TouchableOpacity onPress={() => navigation.navigate('AddChat')} activeOpacity={0.5}>
-                   <AntDesign name = "setting" size = {24} color="black"/>
-                        </TouchableOpacity>   
-                </View>
-            ),
-
-
-        });
-        
-
-        
-    },[navigation
-    ]);
-
-    return (
-        <SafeAreaView style = {{flex:1, backgroundColor:"white"}}>
-            <Text >
-                {route.params.chatName}
-            </Text>
-        </SafeAreaView>
-    )
-
-
-
-
-
-
-
-
-
-
-    // const [input, setInput] = useState("");
-
-
-
-    // const createChat = async () => {
-    //     await db.collection('chats').add({
-    //         chatName: input
-    //     })
-    //     .then(() => {
-    //         navigation.goBack();
-    //     })
-    //     .catch((error) => alert(error));
-    // };
-
-
-//     return (
-
-//         <View
-//         style={styles.container}>
-//             <Input
-//             placeholder = "Enter a Chat Name"
-//             value = {input}
-//             onChangeText = {(text) => setInput(text)}
-//             onSubmitEditing = {createChat}
-//             leftIcon = {
-//                 <Icon name = "search" type = "antdesign" size = {24} color = "black"/>
-//             }
-           
-//             />
-//          <Button onPress = {createChat} title = "Create new Chat" />
-//         </View>
-//     );
-
- }
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
+      <KeyboardAvoidingView style={styles.chatContainer}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <>
+            <ScrollView
+              contentContainerStyle={{ paddingTop: 15 }}
+              scrollsToTop="false"
+              ref={scrollViewRef}
+              onContentSizeChange={() =>
+                scrollViewRef.current.scrollToEnd({ animated: false })
+              }
+            >
+              {messages.map(({ id, data }) =>
+                data.email === auth.currentUser.email ? (
+                  <View key={id} style={styles.myMessage}>
+                    <Avatar
+                      rounded
+                      right={-5}
+                      bottom={-15}
+                      size={30}
+                      position="absolute"
+                    />
+                    <Text style={styles.myMessageText}>{data.message}</Text>
+                  </View>
+                ) : (
+                  <View key={id} style={styles.recievedMessage}>
+                    <Avatar
+                      rounded
+                      size={30}
+                      rounded
+                      left={-5}
+                      bottom={-15}
+                      size={30}
+                      position="absolute"
+                    />
+                    <Text style={styles.recievedMessageText}>
+                      {data.message}
+                    </Text>
+                    <Text style={styles.recievedMessageName}>
+                      {data.displayName}
+                    </Text>
+                  </View>
+                )
+              )}
+            </ScrollView>
+            <View style={styles.footer}>
+              <TextInput
+                placeholder="Type Here"
+                value={input}
+                onChangeText={(text) => setInput(text)}
+                style={styles.textInput}
+                onSubmitEditing={handleSendMessage}
+              />
+              <TouchableOpacity onPress={handleSendMessage} activeOpacity={0.5}>
+                <Ionicons name="send" size={24} color="#2B68E6" />
+              </TouchableOpacity>
+            </View>
+          </>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
 
 export default ChatScreen;
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  chatContainer: {
+    flex: 1,
+  },
 
-    // container: {
-    //     flex:1,
-    //     alignItems: "center",
-    //     justifyContent: "flex-start",
-    //     padding:30,
-    //     backgroundColor:'white',
-    //     height:"100%"
-    // },
-    // inputContainer: {
-    //     width:300,
-    // },
-    // button:{
-    //     width:100,
-    //     marginTop:20,
-
-    // },
-})
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    padding: 15,
+  },
+  textInput: {
+    bottom: 0,
+    height: 40,
+    flex: 1,
+    marginRight: 15,
+    backgroundColor: "#ECECEC",
+    padding: 10,
+    color: "grey",
+    borderRadius: 30,
+  },
+  recievedMessage: {
+    padding: 15,
+    backgroundColor: "#ECECEC",
+    alignSelf: "flex-start",
+    borderRadius: 20,
+    marginLeft: 15,
+    marginBottom: 20,
+    maxWidth: "80%",
+    position: "relative",
+  },
+  myMessage: {
+    padding: 15,
+    backgroundColor: "#2B68E6",
+    alignSelf: "flex-end",
+    borderRadius: 20,
+    margin: 15,
+    maxWidth: "80%",
+    position: "relative",
+  },
+  recievedMessageText: {
+    color: "black",
+    fontWeight: "500",
+    marginLeft: 10,
+    marginBottom: 15,
+  },
+  myMessageText: {
+    color: "white",
+    fontWeight: "500",
+    marginLeft: 10,
+  },
+  recievedMessageName: {
+    left: 10,
+    color: "black",
+    fontSize: 12,
+    paddingRight: 10,
+  },
+  headerTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerText: {
+    color: "white",
+    marginLeft: 10,
+    fontWeight: "700",
+  },
+  headerRight: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: 75,
+    marginRight: 20,
+  },
+});
