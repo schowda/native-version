@@ -55,7 +55,8 @@ const ChatScreen = ({ navigation, route }) => {
             <FontAwesome name="" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Ionicons name="settings" size={24} color="white" />
+            <Ionicons name="settings" size={24} color="white" 
+             onPress={() => navigation.navigate("Settings")}/>
           </TouchableOpacity>
         </View>
       ),
@@ -64,6 +65,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   const handleSendMessage = () => {
     Keyboard.dismiss();
+// console.log(data.timestamp)
 
     db.collection("chats").doc(route.params.id).collection("messages").add({
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -136,6 +138,10 @@ const ChatScreen = ({ navigation, route }) => {
                     </Text>
                     <Text style={styles.recievedMessageName}>
                       {data.displayName}
+                    </Text>
+                   
+                    <Text style={styles.recievedMessageName}>
+                      {data.timestamp.toDate().toString()}
                     </Text>
                   </View>
                 )

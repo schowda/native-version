@@ -3,12 +3,12 @@ import * as firebase from "firebase";
 // import "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBWvnFZ6o5p7NDZALubjzQbf8tmHCf-CXA",
-  authDomain: "chatsapp-native.firebaseapp.com",
-  projectId: "chatsapp-native",
-  storageBucket: "chatsapp-native.appspot.com",
-  messagingSenderId: "686158714901",
-  appId: "1:686158714901:web:42fa0988c90b22d88c961c"
+  apiKey: "AIzaSyCDOnUIQVXkNtvs8631_Si4_YjETN0EC8Q",
+  authDomain: "extended-creek-305601.firebaseapp.com",
+  projectId: "extended-creek-305601",
+  storageBucket: "extended-creek-305601.appspot.com",
+  messagingSenderId: "389494727243",
+  appId: "1:389494727243:web:2d7bd161618b6c0c7923ce"
 };
 
 let app;
