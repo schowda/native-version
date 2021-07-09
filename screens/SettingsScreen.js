@@ -5,6 +5,12 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
 import { Button, Input, Text, Image } from "react-native-elements";
 import { auth } from "../firebase";
+import {
+  AdMobBanner,
+  AdMobInterstitial,
+  PublisherBanner,
+  AdMobRewarded
+} from 'expo-ads-admob';
 
 const SettingsScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -31,6 +37,11 @@ const SettingsScreen = ({ navigation }) => {
         Update Your Profile
       </Text>
       <View style={styles.inputContainer}>
+      <AdMobBanner style={styles.bannerAd}
+                bannerSize="fullBanner"
+                adUnitID="ca-app-pub-3940256099942544/6300978111" // Test ID, Replace with your-admob-unit-id
+                onDidFailToReceiveAdWithError={this.bannerError}
+                onAdViewDidReceiveAd = {this.bannerAdReceived} />
         <Input
           placeholder="Full Name"
           autoFocus

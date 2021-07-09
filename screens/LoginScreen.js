@@ -3,8 +3,10 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, KeyboardAvoidingView } from "react-native";
 import { Button, Input, Image } from "react-native-elements";
 import { auth } from "../firebase";
+import { render } from "react-dom";
 
 const LoginScreen = ({ navigation }) => {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,6 +26,21 @@ const LoginScreen = ({ navigation }) => {
       .catch((error) => alert(error));
   };
 
+  const anonymus = () => {
+  auth
+    .signInAnonymously()
+  .then(() => {
+    console.log('User signed in anonymously');
+  })
+  .catch(error => {
+    if (error.code === 'auth/operation-not-allowed') {
+      console.log('Enable anonymous in your firebase console.');
+    }
+
+    console.error(error);
+  });
+  }
+ 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <StatusBar style="light" />
@@ -59,8 +76,8 @@ const LoginScreen = ({ navigation }) => {
       <Button
         backgroundColor = '#ff0000'
         containerStyle={styles.button}
-        onPress={() => navigation.navigate("Register")}
-        title="Login with Google"
+        onPress={anonymus}
+        title="Anonymus Login"
         type="solid"
       />
       <Button
@@ -72,6 +89,7 @@ const LoginScreen = ({ navigation }) => {
       <View style={{ height: 100 }} />
     </KeyboardAvoidingView>
   );
+      
 };
 
 export default LoginScreen;

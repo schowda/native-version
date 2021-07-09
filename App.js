@@ -10,6 +10,7 @@ import AddChatScreen from './screens/AddChatScreen';
 import ChatScreen from './screens/ChatScreen'
 import { createStackNavigator } from "@react-navigation/stack";
 import SettingsScreen from './screens/SettingsScreen';
+import { render } from 'react-dom';
 
 
 const Stack = createStackNavigator();
@@ -36,6 +37,7 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
